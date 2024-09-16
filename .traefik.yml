@@ -5,6 +5,6 @@ import: github.com/traefik/plugin-rewritebody
 compatibility: TODO
 testData:
   lastModified: true
-  rewrites:
-    - regex: "bar"
-      replacement: "foo"
+  rewrite:
+    regex: "bar"
+    replacement: "foo"

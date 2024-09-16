@@ -37,30 +37,27 @@ type rewrite struct {
 type rewriteBody struct {
 	name         string
 	next         http.Handler
-	rewrites     []rewrite
+	rewrite      rewrite
 	lastModified bool
 }
 
 // New creates and returns a new rewrite body plugin instance.
 func New(_ context.Context, next http.Handler, config *Config, name string) (http.Handler, error) {
-	rewrites := make([]rewrite, len(config.Rewrites))
+	regex, err := regexp.Compile(config.Rewrite.Regex)
 
-	for i, rewriteConfig := range config.Rewrites {
-		regex, err := regexp.Compile(rewriteConfig.Regex)
-		if err != nil {
-			return nil, fmt.Errorf("error compiling regex %q: %w", rewriteConfig.Regex, err)
-		}
+	if err != nil {
+		return nil, fmt.Errorf("error compiling regex %q: %w", rewriteConfig.Regex, err)
+	}
 
-		rewrites[i] = rewrite{
-			regex:       regex,
-			replacement: []byte(rewriteConfig.Replacement),
-		}
+	rewriteObject := rewrite{
+		regex:       regex,
+		replacement: []byte(config.Rewrite.Replacement),
 	}
 
 	return &rewriteBody{
 		name:         name,
 		next:         next,
-		rewrites:     rewrites,
+		rewrite:     rewriteObject,
 		lastModified: config.LastModified,
 	}, nil
 }
@@ -85,9 +82,7 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	for _, rwt := range r.rewrites {
-		bodyBytes = rwt.regex.ReplaceAll(bodyBytes, rwt.replacement)
-	}
+	bodyBytes = r.rewrite.regex.ReplaceAll(bodyBytes, r.rewrite.replacement)
 
 	if _, err := rw.Write(bodyBytes); err != nil {
 		log.Printf("unable to write rewrited body: %v", err)

@@ -14,7 +14,7 @@ func TestServeHTTP(t *testing.T) {
 	tests := []struct {
 		desc            string
 		contentEncoding string
-		rewrites        []Rewrite
+		rewrite         Rewrite
 		lastModified    bool
 		resBody         string
 		expResBody      string
@@ -22,37 +22,18 @@ func TestServeHTTP(t *testing.T) {
 	}{
 		{
 			desc: "should replace foo by bar",
-			rewrites: []Rewrite{
-				{
-					Regex:       "foo",
-					Replacement: "bar",
-				},
+			rewrite: Rewrite{
+				Regex:       "foo",
+				Replacement: "bar",
 			},
 			resBody:    "foo is the new bar",
 			expResBody: "bar is the new bar",
 		},
 		{
-			desc: "should replace foo by bar, then by foo",
-			rewrites: []Rewrite{
-				{
-					Regex:       "foo",
-					Replacement: "bar",
-				},
-				{
-					Regex:       "bar",
-					Replacement: "foo",
-				},
-			},
-			resBody:    "foo is the new bar",
-			expResBody: "foo is the new foo",
-		},
-		{
 			desc: "should not replace anything if content encoding is not identity or empty",
-			rewrites: []Rewrite{
-				{
-					Regex:       "foo",
-					Replacement: "bar",
-				},
+			rewrite: Rewrite{
+				Regex:       "foo",
+				Replacement: "bar",
 			},
 			contentEncoding: "gzip",
 			resBody:         "foo is the new bar",
@@ -60,11 +41,9 @@ func TestServeHTTP(t *testing.T) {
 		},
 		{
 			desc: "should replace foo by bar if content encoding is identity",
-			rewrites: []Rewrite{
-				{
-					Regex:       "foo",
-					Replacement: "bar",
-				},
+			rewrite: Rewrite{
+				Regex:       "foo",
+				Replacement: "bar",
 			},
 			contentEncoding: "identity",
 			resBody:         "foo is the new bar",
@@ -72,11 +51,9 @@ func TestServeHTTP(t *testing.T) {
 		},
 		{
 			desc: "should not remove the last modified header",
-			rewrites: []Rewrite{
-				{
-					Regex:       "foo",
-					Replacement: "bar",
-				},
+			rewrite: Rewrite{
+				Regex:       "foo",
+				Replacement: "bar",
 			},
 			contentEncoding: "identity",
 			lastModified:    true,
@@ -90,7 +67,7 @@ func TestServeHTTP(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := &Config{
 				LastModified: test.lastModified,
-				Rewrites:     test.rewrites,
+				Rewrite:      test.rewrite,
 			}
 
 			next := func(rw http.ResponseWriter, req *http.Request) {
@@ -130,30 +107,22 @@ func TestServeHTTP(t *testing.T) {
 func TestNew(t *testing.T) {
 	tests := []struct {
 		desc     string
-		rewrites []Rewrite
+		rewrite  Rewrite
 		expErr   bool
 	}{
 		{
 			desc: "should return no error",
-			rewrites: []Rewrite{
-				{
-					Regex:       "foo",
-					Replacement: "bar",
-				},
-				{
-					Regex:       "bar",
-					Replacement: "foo",
-				},
+			rewrite: Rewrite{
+				Regex:       "foo",
+				Replacement: "bar",
 			},
 			expErr: false,
 		},
 		{
 			desc: "should return an error",
-			rewrites: []Rewrite{
-				{
-					Regex:       "*",
-					Replacement: "bar",
-				},
+			rewrite: Rewrite{
+				Regex:       "*",
+				Replacement: "bar",
 			},
 			expErr: true,
 		},
@@ -161,7 +130,7 @@ func TestNew(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			config := &Config{
-				Rewrites: test.rewrites,
+				Rewrite: test.rewrite,
 			}
 
 			_, err := New(context.Background(), nil, config, "rewriteBody")

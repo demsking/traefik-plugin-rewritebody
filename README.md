@@ -1,6 +1,6 @@
-# Rewrite Body
+# Simple Rewrite Body
 
-Rewrite body is a middleware plugin for [Traefik](https://github.com/traefik/traefik) which rewrites the HTTP response body by replacing a search regex by a replacement string.
+Simple Rewrite Body is a middleware plugin for [Traefik](https://github.com/traefik/traefik) which rewrites the HTTP response body by replacing a search regex by a replacement string.
 
 ## Configuration
 
@@ -11,13 +11,13 @@ Rewrite body is a middleware plugin for [Traefik](https://github.com/traefik/tra
   token = "xxxx"
 
 [experimental.plugins.rewritebody]
-  modulename = "github.com/traefik/plugin-rewritebody"
+  modulename = "github.com/demsking/traefik-plugin-rewritebody"
   version = "v0.3.1"
 ```
 
 ### Dynamic
 
-To configure the `Rewrite Body` plugin you should create a [middleware](https://doc.traefik.io/traefik/middlewares/overview/) in 
+To configure the `Simple Rewrite Body` plugin you should create a [middleware](https://doc.traefik.io/traefik/middlewares/overview/) in 
 your dynamic configuration as explained [here](https://doc.traefik.io/traefik/middlewares/overview/).
 The following example creates  and uses the `rewritebody` middleware plugin to replace all `foo` occurrences by `bar` in the HTTP response body.
 
@@ -37,7 +37,7 @@ If you want to apply some limits on the response body, you can chain this middle
     lastModified = true
 
     # Rewrites all "foo" occurences by "bar"
-    [[http.middlewares.rewrite-foo.plugin.rewritebody.rewrites]]
+    [http.middlewares.rewrite-foo.plugin.rewritebody.rewrite]
       regex = "foo"
       replacement = "bar"
 
